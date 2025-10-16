@@ -40,7 +40,7 @@ describe('transformBatch', () => {
 
   it('invokes onBatchResult callback with per-batch outputs', async () => {
     (generateObject as unknown as Mock).mockReset();
-    ;(generateObject as unknown as Mock)
+    ; (generateObject as unknown as Mock)
       .mockResolvedValueOnce({ object: [{ value: 10 }], response: {} })
       .mockResolvedValueOnce({ object: [{ value: 20 }], response: {} });
 
@@ -71,7 +71,7 @@ describe('transformBatch', () => {
   it('retries on failure up to maxRetries with repair enabled', async () => {
     (generateObject as unknown as Mock).mockReset();
     // First call throws, second succeeds
-    ;(generateObject as unknown as Mock)
+    ; (generateObject as unknown as Mock)
       .mockRejectedValueOnce(new Error('transient'))
       .mockResolvedValueOnce({ object: [{ value: 99 }], response: {} });
 
@@ -90,7 +90,7 @@ describe('transformBatch', () => {
 
   it('propagates error when repair disabled and no retries', async () => {
     (generateObject as unknown as Mock).mockReset();
-    ;(generateObject as unknown as Mock).mockRejectedValueOnce(new Error('boom'));
+    ; (generateObject as unknown as Mock).mockRejectedValueOnce(new Error('boom'));
 
     await expect(
       transformBatch<{ value: number }>({
@@ -104,5 +104,53 @@ describe('transformBatch', () => {
       }),
     ).rejects.toThrow('boom');
   });
-});
 
+  it('builds prompts with full batch size (e.g., 50)', async () => {
+    (generateObject as unknown as Mock).mockReset();
+    // For 500 items with batchSize 50 -> 10 batches
+    // Always return a trivial array; we only care about prompt content
+    (generateObject as unknown as Mock).mockResolvedValue({ object: [{ value: 1 }], response: {} });
+
+    const items = Array.from({ length: 500 }, (_, i) => `item-${i}`);
+    await transformBatch<{ value: number }>({
+      model,
+      schema,
+      items,
+      batchSize: 50,
+      concurrency: 2,
+      debug: false,
+    });
+
+    // Expect 10 batches
+    expect((generateObject as unknown as Mock).mock.calls.length).toBe(10);
+    // Each prompt should indicate 50 inputs
+    for (const call of (generateObject as unknown as Mock).mock.calls) {
+      const arg = call[0];
+      expect(arg.prompt).toContain('Inputs (50):');
+    }
+  });
+  it('builds prompts with full batch size (e.g., 100)', async () => {
+    (generateObject as unknown as Mock).mockReset();
+    // For 500 items with batchSize 100 -> 5 batches
+    // Always return a trivial array; we only care about prompt content
+    (generateObject as unknown as Mock).mockResolvedValue({ object: [{ value: 1 }], response: {} });
+
+    const items = Array.from({ length: 500 }, (_, i) => `item-${i}`);
+    await transformBatch<{ value: number }>({
+      model,
+      schema,
+      items,
+      batchSize: 100,
+      concurrency: 5,
+      debug: false,
+    });
+
+    // Expect 5 batches
+    expect((generateObject as unknown as Mock).mock.calls.length).toBe(5);
+    // Each prompt should indicate 100 inputs
+    for (const call of (generateObject as unknown as Mock).mock.calls) {
+      const arg = call[0];
+      expect(arg.prompt).toContain('Inputs (100):');
+    }
+  });
+});

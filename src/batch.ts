@@ -53,6 +53,14 @@ export async function transformBatch<T, TProvider extends LanguageModel = Langua
         let attempt = 0;
         while (true) {
           try {
+            if (debug) {
+              try {
+                // eslint-disable-next-line no-console
+                console.debug('[data-tamer] Batch size', { batchIndex, count: batchItems.length });
+              } catch {
+                // noop
+              }
+            }
             const prompt = buildBatchPrompt<T>({
               items: batchItems,
               schema,
