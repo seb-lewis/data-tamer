@@ -15,71 +15,42 @@ pnpm add ai zod
 ```ts
 import { z } from "zod"
 import { createOpenRouter } from "@openrouter/ai-sdk-provider"
-import type { OpenRouterResponsesProviderOptions } from "@openrouter/ai-sdk-provider"
 import { transformObject, transformBatch } from "data-tamer"
 
-const openrouter = createOpenRouter({
-	apiKey: process.env.OPENROUTER_API_KEY!
+// 1) Create a provider/model
+const openrouter = createOpenRouter({ apiKey: process.env.OPENROUTER_API_KEY! })
+const model = openrouter.chat("openai/gpt-4.1-mini")
+
+// 2) Define your output schema (types are inferred from Zod)
+const schema = z.object({ name: z.string(), age: z.number().nullable() })
+
+// 3) Single transform from messy text
+const { data } = await transformObject({
+  model,
+  schema,
+  items: ["John Doe, 34 years old"],
+  promptContext: { instructions: "Extract name and age. Use null when unknown." },
+  schemaName: "Person",
+  schemaDescription: "A person record with name and age",
 })
 
-const schema = z.object({
-	name: z.string(),
-	age: z.number().nullable()
-})
+console.log(data) // { name: 'John Doe', age: 34 }
 
-// Single transform from raw text
-const { data } = await transformObject<
-	z.infer<typeof schema>,
-	OpenRouterResponsesProviderOptions
->({
-	model: openrouter.chat("openai/gpt-4.1-mini"),
-	schema,
-	// Put guidance inside promptContext (not inside items)
-	promptContext: {
-		instructions: "Extract name and age. Use null when unknown."
-	},
-	// Items are raw inputs only
-	items: ["John Doe, 34 years old"],
-	schemaName: "Person",
-	schemaDescription: "A person record with name and age",
-	// Provider-specific options: set under providerOptions
-	providerOptions: {
-		openrouter: {
-			// Reasoning/token controls if supported by the model
-			reasoning: { effort: "low" }
-			// other OpenRouter options...
-		}
-	} satisfies OpenRouterResponsesProviderOptions
-})
-
-console.log(data) // => { name: 'John Doe', age: 34 }
-
-// Batch transform (automatic compact prompt for N items)
+// 4) Batch transform (compact prompt for multiple inputs)
 const inputs = ["Jane Doe, 29", "Mr. Smith, unknown age", { text: "Alice, 41" }]
 
-const results = await transformBatch<
-	z.infer<typeof schema>,
-	OpenRouterResponsesProviderOptions
->({
-	model: openrouter.chat("openai/gpt-4.1-mini"),
-	schema,
-	// Guidance belongs in promptContext/system or instructions, not in items
-	promptContext: {
-		instructions: "Extract name and age. Use null when unknown."
-	},
-	items: inputs,
-	batchSize: 2,
-	concurrency: 2,
-	schemaName: "Person",
-	schemaDescription: "A person record with name and age",
-	providerOptions: {
-		openrouter: {
-			reasoning: { effort: "low" }
-		}
-	} satisfies OpenRouterResponsesProviderOptions
+const results = await transformBatch({
+  model,
+  schema,
+  items: inputs,
+  batchSize: 2,
+  concurrency: 2,
+  promptContext: { instructions: "Extract name and age. Use null when unknown." },
+  schemaName: "Person",
+  schemaDescription: "A person record with name and age",
 })
 
-console.log(results) // => array of validated objects
+console.log(results) // array of validated objects
 ```
 
 ## API
