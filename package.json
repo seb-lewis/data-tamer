@@ -1,0 +1,52 @@
+{
+	"name": "data-tamer",
+	"version": "1.0.0",
+	"description": "Lightweight wrapper around the Vercel AI SDK for transforming data with structured outputs, prompt compaction for lower token usage, and batching utilities.",
+	"type": "module",
+	"main": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "tsup && rm -rf dist/src && rm -rf dist/tests && rm -rf dist/examples",
+		"clean": "rm -rf dist",
+		"prepublishOnly": "pnpm run clean && pnpm run build",
+		"test": "vitest run",
+		"test:watch": "vitest",
+		"changeset": "changeset",
+		"version-packages": "changeset version",
+		"ci:version": "changeset version",
+		"ci:publish": "changeset publish",
+		"release": "pnpm run build && changeset publish"
+	},
+	"keywords": [
+		"ai",
+		"data",
+		"transform",
+		"data normalization",
+		"batch",
+		"prompt",
+		"compaction"
+	],
+	"author": "Sebastian Lewis",
+	"license": "ISC",
+	"packageManager": "pnpm@10.13.1",
+	"peerDependencies": {
+		"@zod/core": "^0.11.6",
+		"ai": "^5.0.72",
+		"zod": "^4.1.12"
+	},
+	"dependencies": {
+		"p-limit": "^6.1.0"
+	},
+	"devDependencies": {
+		"@ai-sdk/provider-utils": "^3.0.12",
+		"@changesets/changelog-github": "^0.4.8",
+		"@changesets/cli": "^2.27.9",
+		"@types/node": "^22.7.4",
+		"tsup": "^8.3.5",
+		"typescript": "^5.6.3",
+		"vitest": "^2.1.3"
+	}
+}
