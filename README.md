@@ -59,7 +59,7 @@ console.log(results) // array of validated objects
 
   - Generates a single object (default) or other output strategies.
   - If `items` is provided, a compact prompt is auto-built to minimize tokens.
-  - You can pass `prompt` alongside `items`; it is injected into the system prompt to guide the transformation.
+  - You can pass `promptContext` alongside `items`; it is injected into the system prompt to guide the transformation.
   - Structured output: by default `mode: 'json'`. Pass a Zod schema or a JSON Schema via the `schema` field; the AI SDK accepts both. If a Zod schema is provided, results are additionally validated locally with Zod.
   - Validates against `schema` with Zod.
 
@@ -70,7 +70,7 @@ console.log(results) // array of validated objects
 - `transformBatch({ items, batchSize, concurrency, ... })`
   - Splits `items` into batches, builds compact prompts, calls `generateObject` per batch.
   - Returns a flattened array of validated results.
-  - If you supply `prompt` together with `items`, it is injected into the system prompt for each batch.
+  - If you supply `promptContext` together with `items`, it is injected into the system prompt for each batch.
   - Structured output uses `mode: 'json'` by default and accepts either a Zod or JSON Schema via `schema`.
   - Set `debug: true` to log provider response metadata per batch.
 
@@ -81,7 +81,7 @@ The prompt builder:
 - De-duplicates schema guidance and uses short, strict JSON directions.
 - Truncates per-item input via `charLimitPerItem`.
 - Supports optional `system`, `instructions`, and few-shot `examples`.
-- Items are raw inputs (strings or objects). Place guidance/instructions in `prompt` (injected into the system prompt) or `promptContext.system`/`promptContext.instructions`.
+- Items are raw inputs (strings or objects). Place guidance/instructions in `promptContext.system`/`promptContext.instructions`.
 
 ## Notes
 
