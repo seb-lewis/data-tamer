@@ -31,7 +31,6 @@
 	],
 	"author": "Sebastian Lewis",
 	"license": "ISC",
-	"packageManager": "pnpm@10.13.1",
 	"peerDependencies": {
 		"@zod/core": "^0.11.6",
 		"ai": "^5.0.72",
