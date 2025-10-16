@@ -6,7 +6,7 @@ export default defineConfig({
   outDir: 'dist',
   format: ['esm'],
   dts: { entry: { index: 'src/index.ts' } },
-  tsconfig: 'tsconfig.build.json',
+  tsconfig: 'tsconfig.json',
   sourcemap: false,
   minify: false,
   clean: true,
